@@ -69,15 +69,31 @@ class Program:
         
         self.qtyOnHand = self.driver.find_element_by_id(f'{id}_isl').text
 
+        self.price = self.driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input').get_attribute('value')
+
+        print(f'Precio del FIIX: {self.price}')
+        if self.price == '':
+            self.obtPrice()
+
+        priceOnFiixUpdate = self.driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input')
+
+        self.price = self.price.replace('USD', '')
+        
+        priceOnFiixUpdate.send_keys(self.price.strip())
+        buttonSave = self.driver.find_element_by_class_name('saveButtonAct')
+        buttonSave.click()
+
+        time.sleep(3)
+
         self.driver.close()
 
-        self.obtPrice()
+        
 
         showinfo(title='Informacion sobre el Supplie', message=f"""
         Supplie name: {self.nameSupplie}\n
         Code: {self.idSupplie}\n
         Qty on hand: {self.qtyOnHand}\n
-        Price: {self.price}\n
+        Price: USD {self.price}\n
         """)
 
     def verificar(self, event=''):
