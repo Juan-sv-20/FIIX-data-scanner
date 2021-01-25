@@ -12,7 +12,7 @@ class Program:
         self.resizable = False
         self.PATH = '/Users/juansantos/Desktop/Python/interfaz-Fiix-scaner/driver/chromedriver'
     
-    def obtDriver(self, option=None):
+    def obtDriver(self, url=''):
 
         self.driver = webdriver.Chrome(self.PATH)
         self.driver.get(self.txtScanner.get())
@@ -23,6 +23,26 @@ class Program:
         j_password.submit()
 
         time.sleep(1)
+
+    def obtPrice(self):
+        # e10twf T4OwTb
+        # e10twf T4OwTb
+    
+        url = f'https://www.google.com/'
+
+        driver = webdriver.Chrome(self.PATH)
+        driver.get(url)
+        
+        buscador = driver.find_element_by_name('q')
+        buscador.send_keys(self.nameSupplie)
+        buscador.submit()
+
+        prices = driver.find_elements_by_css_selector('.e10twf')
+        if len(prices) > 0:
+            self.price = prices[0].text
+        
+        driver.close()
+
 
     def openTabWO(self):
 
@@ -43,18 +63,21 @@ class Program:
 
         id = self.driver.find_element_by_class_name('maFormNew').get_attribute('id')
 
-        idSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strCode_cell .formCellInside35 input').get_attribute('value')
+        self.idSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strCode_cell .formCellInside35 input').get_attribute('value')
         
-        nameSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strName_cell .formExtraLarge div .graingerNameFld').get_attribute('value')
+        self.nameSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strName_cell .formExtraLarge div .graingerNameFld').get_attribute('value')
         
-        qtyOnHand = self.driver.find_element_by_id(f'{id}_isl').text
+        self.qtyOnHand = self.driver.find_element_by_id(f'{id}_isl').text
 
         self.driver.close()
 
+        self.obtPrice()
+
         showinfo(title='Informacion sobre el Supplie', message=f"""
-        Supplie name: {nameSupplie}\n
-        Code: {idSupplie}\n
-        Qty on hand: {qtyOnHand}\n
+        Supplie name: {self.nameSupplie}\n
+        Code: {self.idSupplie}\n
+        Qty on hand: {self.qtyOnHand}\n
+        Price: {self.price}\n
         """)
 
     def verificar(self, event=''):

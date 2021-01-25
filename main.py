@@ -1,7 +1,5 @@
 import ventana
 
-
-
 def main():
     window = ventana.Program()
 
