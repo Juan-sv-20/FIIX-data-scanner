@@ -11,18 +11,20 @@ class Program:
         self.size = '400x200'
         self.resizable = False
         self.PATH = '/Users/juansantos/Desktop/Python/interfaz-Fiix-scaner/driver/chromedriver'
+        self.woOpen = False
+        self.addComponentBefore = False
     
     def obtDriver(self, url=''):
 
-        self.driver = webdriver.Chrome(self.PATH)
-        self.driver.get(self.txtScanner.get())
-        j_username = self.driver.find_element_by_name('j_username')
+        driver = webdriver.Chrome(self.PATH)
+        driver.get(self.txtScanner.get())
+        j_username = driver.find_element_by_name('j_username')
         j_username.send_keys(user)
-        j_password = self.driver.find_element_by_name('j_password')
+        j_password = driver.find_element_by_name('j_password')
         j_password.send_keys(password)
         j_password.submit()
 
-        time.sleep(1)
+        return driver
 
     def obtPrice(self):
         # e10twf T4OwTb
@@ -46,46 +48,79 @@ class Program:
 
     def openTabWO(self):
 
-        self.obtDriver()
+        self.driverWo = self.obtDriver()
 
-        table = self.driver.find_element_by_css_selector('.formTabs35 ul').get_attribute('id')
+        # Flags
+        self.addComponentBefore = False
+        self.woOpen = True
 
-        id = table.find('_')
-        table = table[:id]
+        time.sleep(2)
 
-        part_seccion = self.driver.find_element_by_css_selector(f'.formTabs35 ul #{table}_tabPage_Parts')
+        id = self.driverWo.find_element_by_class_name('maFormNew').get_attribute('id')
+
+        part_seccion = self.driverWo.find_element_by_id(f'{id}_tabPage_Parts')
 
         part_seccion.click()
     
+    def addComponentToOrder(self):
+        idWindowAddContainer = self.driverWo.find_element_by_class_name('modalWindowFrame').get_attribute('id')
+
+        idAdd = self.driverWo.find_element_by_css_selector(f'#{idWindowAddContainer}_innerDiv .listLargeMain').get_attribute('id')
+
+        inputSearch = self.driverWo.find_element_by_id(f'{idAdd}_search____searchtermparameter')
+        inputSearch.clear()
+        inputSearch.send_keys(self.idSupplie)
+            
+        btnSearch = self.driverWo.find_element_by_css_selector('.listSearchLarge div')
+        btnSearch.click()
+
+        self.addComponentBefore = True
+
     def openTabSupplie(self):
 
-        self.obtDriver()
+        driver = self.obtDriver()
 
-        id = self.driver.find_element_by_class_name('maFormNew').get_attribute('id')
-
-        self.idSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strCode_cell .formCellInside35 input').get_attribute('value')
+        time.sleep(3)
         
-        self.nameSupplie = self.driver.find_element_by_css_selector(f'#{id}_column_strName_cell .formExtraLarge div .graingerNameFld').get_attribute('value')
-        
-        self.qtyOnHand = self.driver.find_element_by_id(f'{id}_isl').text
+        id = driver.find_element_by_class_name('maFormNew').get_attribute('id')
 
-        self.price = self.driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input').get_attribute('value')
+        self.idSupplie = driver.find_element_by_css_selector(f'#{id}_column_strCode_cell .formCellInside35 input').get_attribute('value')
+        
+        if self.woOpen:
+            driver.close()
+
+            if self.addComponentBefore == False:
+                idContainer = self.driverWo.find_elements_by_class_name('listLargeMain')
+                id = idContainer[1].get_attribute('id')
+
+                buttonAdd = self.driverWo.find_element_by_css_selector(f'#{id}_ft .listPagingContainer35 span')
+                buttonAdd.click()
+
+                time.sleep(1)
+
+            self.addComponentToOrder()
+
+            return 0
+
+        self.nameSupplie = driver.find_element_by_css_selector(f'#{id}_column_strName_cell .formExtraLarge div .graingerNameFld').get_attribute('value')
+        
+        self.qtyOnHand = driver.find_element_by_id(f'{id}_isl').text
+
+        self.price = driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input').get_attribute('value')
 
         print(f'Precio del FIIX: {self.price}')
         if self.price == '':
             self.obtPrice()
 
-        priceOnFiixUpdate = self.driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input')
+        priceOnFiixUpdate = driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input')
 
         self.price = self.price.replace('USD', '')
         
         priceOnFiixUpdate.send_keys(self.price.strip())
-        buttonSave = self.driver.find_element_by_class_name('saveButtonAct')
+        buttonSave = driver.find_element_by_class_name('saveButtonAct')
         buttonSave.click()
 
-        time.sleep(3)
-
-        self.driver.close()
+        driver.close()
 
         
 
