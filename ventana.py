@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 class Program:
+    # Constructor
     def __init__(self):
         self.title = 'Fiix-Scanner'
         self.size = '400x200'
@@ -14,40 +15,50 @@ class Program:
         self.woOpen = False
         self.addComponentBefore = False
     
+    # Method to obtain the driver to navigate inside it
     def obtDriver(self, url=''):
-
+        
+        # Open driver with Chromedriver
         driver = webdriver.Chrome(self.PATH)
+        # Open Url on driver
         driver.get(self.txtScanner.get())
+
+        # Initialize session with the TOKEN's 
         j_username = driver.find_element_by_name('j_username')
         j_username.send_keys(user)
         j_password = driver.find_element_by_name('j_password')
         j_password.send_keys(password)
         j_password.submit()
 
+        # Return the driver initialized
         return driver
-
-    def obtPrice(self):
-        # e10twf T4OwTb
-        # e10twf T4OwTb
     
+    # Method to obtain a price depend only for its name
+    def obtPrice(self):
+        
+        # URL
         url = f'https://www.google.com/'
 
+        # Open driver with Chromedriver
         driver = webdriver.Chrome(self.PATH)
+        # Open URL on driver
         driver.get(url)
         
+        # Find the search text input and send the componento find
         buscador = driver.find_element_by_name('q')
         buscador.send_keys(self.nameSupplie)
         buscador.submit()
 
+        # Obtaining the price from the ADS
         prices = driver.find_elements_by_css_selector('.e10twf')
         if len(prices) > 0:
             self.price = prices[0].text
         
         driver.close()
 
-
     def openTabWO(self):
 
+        # Get the driver primary
         self.driverWo = self.obtDriver()
 
         # Flags
@@ -56,6 +67,7 @@ class Program:
 
         time.sleep(2)
 
+        # Find the ID 
         id = self.driverWo.find_element_by_class_name('maFormNew').get_attribute('id')
 
         part_seccion = self.driverWo.find_element_by_id(f'{id}_tabPage_Parts')
@@ -121,8 +133,6 @@ class Program:
         buttonSave.click()
 
         driver.close()
-
-        
 
         showinfo(title='Informacion sobre el Supplie', message=f"""
         Supplie name: {self.nameSupplie}\n
