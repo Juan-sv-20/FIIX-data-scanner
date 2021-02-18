@@ -3,7 +3,9 @@ from tkinter.messagebox import showinfo
 import time
 from config.config import user, password
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from msedge.selenium_tools import EdgeOptions
+from msedge.selenium_tools import Edge
+from selenium.webdriver import ActionChains
 
 class Program:
     # Constructor
@@ -11,15 +13,21 @@ class Program:
         self.title = 'Fiix-Scanner'
         self.size = '400x200'
         self.resizable = False
-        self.PATH = '/Users/juansantos/Desktop/Python/interfaz-Fiix-scaner/driver/chromedriver'
+        self.PATH = 'driver\msedgedriver.exe'
         self.woOpen = False
         self.addComponentBefore = False
+        self.edge_options = EdgeOptions()
+        self.edge_options.use_chromium = True  # if we miss this line, we can't make Edge headless
+        # A little different from Chrome cause we don't need two lines before 'headless' and 'disable-gpu'
+        self.edge_options.add_argument('headless')
+        self.edge_options.add_argument('disable-gpu')
     
     # Method to obtain the driver to navigate inside it
     def obtDriver(self, url=''):
         
         # Open driver with Chromedriver
-        driver = webdriver.Chrome(self.PATH)
+        driver = Edge(executable_path=self.PATH, options=self.edge_options)
+        # driver = Edge(executable_path=self.PATH)
         # Open Url on driver
         driver.get(self.txtScanner.get())
 
@@ -40,7 +48,7 @@ class Program:
         url = f'https://www.google.com/'
 
         # Open driver with Chromedriver
-        driver = webdriver.Chrome(self.PATH)
+        driver = Edge(executable_path=self.PATH, options=self.edge_options)
         # Open URL on driver
         driver.get(url)
         
@@ -127,21 +135,28 @@ class Program:
         priceOnFiixUpdate = driver.find_element_by_css_selector(f'#{id}_column_dblLastPrice_cell .formCellInside35 input')
 
         self.price = self.price.replace('USD', '')
+        self.price = self.price.replace('$', '')
         
         priceOnFiixUpdate.send_keys(self.price.strip())
-        buttonSave = driver.find_element_by_class_name('saveButtonAct')
-        buttonSave.click()
+        buttonSave = driver.find_element_by_class_name('saveButtonAct').click()
+
+        ActionChains(driver).click(buttonSave).perform()
+        # buttonSave.click()
+
+        time.sleep(2)
 
         driver.close()
 
-        showinfo(title='Informacion sobre el Supplie', message=f"""
-        Supplie name: {self.nameSupplie}\n
-        Code: {self.idSupplie}\n
-        Qty on hand: {self.qtyOnHand}\n
-        Price: USD {self.price}\n
-        """)
+        print(f'\n\n\n\n\n\n\n\nEl precio se actualizo... del producto: {self.nameSupplie}\n\n\n\n\n\n\n\n\n')
+        # showinfo(title='Informacion sobre el Supplie', message=f"""
+        # Supplie name: {self.nameSupplie}\n
+        # Code: {self.idSupplie}\n
+        # Qty on hand: {self.qtyOnHand}\n
+        # Price: USD {self.price}\n
+        # """)
 
     def verificar(self, event=''):
+        # self.ventana.iconify()
         if 'https://windset.macmms.com/?wo=' in self.txtScanner.get():
             self.openTabWO()
 
@@ -149,6 +164,8 @@ class Program:
             self.openTabSupplie()
         else:
             showinfo(title='Error al escanear', message='No se reconoce el codigo ingresado')
+
+        # self.ventana.deiconify()
         self.txtScanner.delete(0, END)
         self.txtScanner.focus()
 
