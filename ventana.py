@@ -1,22 +1,34 @@
 from tkinter import Tk, Label, Button, Entry, END
+from tkinter.constants import X
 from tkinter.messagebox import showinfo
 import time
+
 from config.config import user, password
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+
+import wo
+import workOrderDisplay
 
 class Program:
     def __init__(self):
         self.title = 'Fiix-Scanner'
         self.size = '400x200'
         self.resizable = False
-        self.PATH = '/Users/juansantos/Desktop/Python/interfaz-Fiix-scaner/driver/chromedriver'
+        self.PATH = '/Users/juansantos/Documents/GitHub/FIIX-data-scanner/driver/chromedriver'
         self.woOpen = False
         self.addComponentBefore = False
     
     def obtDriver(self, url=''):
 
-        driver = webdriver.Chrome(self.PATH)
+        opt =  Options()
+        opt.add_argument('--headless')
+
+        driver = webdriver.Chrome(self.PATH, chrome_options=opt)
         driver.get(self.txtScanner.get())
         j_username = driver.find_element_by_name('j_username')
         j_username.send_keys(user)
@@ -45,7 +57,6 @@ class Program:
         
         driver.close()
 
-
     def openTabWO(self):
 
         self.driverWo = self.obtDriver()
@@ -54,13 +65,141 @@ class Program:
         self.addComponentBefore = False
         self.woOpen = True
 
-        time.sleep(2)
+        timeWait = 5
 
-        id = self.driverWo.find_element_by_class_name('maFormNew').get_attribute('id')
+        try:
+            element_present = ec.presence_of_element_located((By.CSS_SELECTOR, ".contentPaneFrameStacked .maFormNew"))
+            WebDriverWait(self.driverWo, timeWait).until(element_present)
 
-        part_seccion = self.driverWo.find_element_by_id(f'{id}_tabPage_Parts')
+            idMain = self.driverWo.find_element_by_css_selector('.contentPaneFrameStacked .maFormNew').get_attribute('id')
 
-        part_seccion.click()
+            print(idMain)
+            try:
+
+                element_present = ec.presence_of_element_located((By.ID, f"{idMain}_label"))
+                WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                self.woName = self.driverWo.find_element_by_id(f'{idMain}_label').text
+                self.woName = self.woName.replace('Work Order Administration: ', '')
+
+            except TimeoutException:
+                print("woName Not Loaded")
+            finally:
+                print("woName Loaded")
+
+            try:
+                element_present = ec.presence_of_element_located((By.CSS_SELECTOR, f"#{idMain}_column_intWorkOrderStatusID_cell .formCellInside35 .autoSuggestDropdownContainer35"))
+                WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                idSelector = self.driverWo.find_element_by_css_selector(f"#{idMain}_column_intWorkOrderStatusID_cell .formCellInside35 .autoSuggestDropdownContainer35").get_attribute('id')
+                idSelector = idSelector.replace('_oe', '')
+
+                try:
+                    element_present = ec.presence_of_element_located((By.ID, f"{idSelector}_oit"))
+                    WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                    self.woStatus = self.driverWo.find_element_by_id(f'{idSelector}_oit').get_attribute('value')
+
+                except TimeoutException:
+                    print("woStatus Not Loaded")
+                finally:
+                    print("woStatus Loaded")
+            except TimeoutException:
+                print("idSelector Not Loaded")
+            finally:
+                print("idSelector Loaded")
+
+            try:
+                element_present = ec.presence_of_element_located((By.CSS_SELECTOR, f"#{idMain}_column_intMaintenanceTypeID_cell .formCellInside35 .autoSuggestDropdownContainer35"))
+                WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                idSelector = self.driverWo.find_element_by_css_selector(f"#{idMain}_column_intMaintenanceTypeID_cell .formCellInside35 .autoSuggestDropdownContainer35").get_attribute('id')
+                idSelector = idSelector.replace('_oe', '')
+
+                try:
+                    element_present = ec.presence_of_element_located((By.ID, f"{idSelector}_oit"))
+                    WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                    self.woType = self.driverWo.find_element_by_id(f'{idSelector}_oit').get_attribute('value')
+
+                except TimeoutException:
+                    print("woType Not Loaded")
+                finally:
+                    print("woType Loaded")
+            except TimeoutException:
+                print("idSelector Not Loaded")
+            finally:
+                print("idSelector Loaded")
+
+            try:
+                element_present = ec.presence_of_element_located((By.CSS_SELECTOR, f"#{idMain}_column_intPriorityID_cell .formCellInside35 .autoSuggestDropdownContainer35"))
+                WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                idSelector = self.driverWo.find_element_by_css_selector(f"#{idMain}_column_intPriorityID_cell .formCellInside35 .autoSuggestDropdownContainer35").get_attribute('id')
+                idSelector = idSelector.replace('_oe', '')
+
+                try:
+                    element_present = ec.presence_of_element_located((By.ID, f"{idSelector}_oit"))
+                    WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                    self.woPriority = self.driverWo.find_element_by_id(f'{idSelector}_oit').get_attribute('value')
+
+                except TimeoutException:
+                    print("woPriority Not Loaded")
+                finally:
+                    print("woPriority Loaded")
+            except TimeoutException:
+                print("idSelector Not Loaded")
+            finally:
+                print("idSelector Loaded")
+            
+            try:
+                element_present = ec.presence_of_element_located((By.CSS_SELECTOR, f"#{idMain}_column_strDescription_cell div textarea"))
+                WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+                self.woSummary = self.driverWo.find_element_by_css_selector(f"#{idMain}_column_strDescription_cell div textarea").text
+
+            except TimeoutException:
+                print("woSummary Not Loaded")
+            finally:
+                print("woSummary Loaded")
+
+        except TimeoutException:
+            print("Timed out waiting for page to load")
+        finally:
+            print("All loaded")
+
+        try:
+            element_present = ec.presence_of_element_located((By.CSS_SELECTOR, f"#{idMain}_tabPage_Parts"))
+            WebDriverWait(self.driverWo, timeWait).until(element_present)
+
+            btnPart = self.driverWo.find_element_by_css_selector(f"#{idMain}_tabPage_Parts")
+            btnPart.click()
+
+        except TimeoutException:
+            print("")
+        finally:
+            print("")
+
+        wOrder = wo.wo(self.woName, self.woStatus, self.woType, self.woPriority, self.woSummary, self.driverWo)
+
+        woDisplay = workOrderDisplay.workOrder(wOrder)
+
+        # idMain = WebDriverWait(self.driverWo, 10).until(ec.presence_of_element_located((By.CSS_SELECTOR, '.contentPaneFrameStacked .maFormNew')))
+        # idMain = self.driverWo.find_element_by_css_selector('.contentPaneFrameStacked .maFormNew').get_attribute('id')
+        # woName = self.driverWo.find_element_by_id(f'{idMain}_label').text
+        # # woName = WebDriverWait(self.driverWo, 10).until(ec.visibility_of_element_located((By.ID, f'{idMain}_label'))).text
+        # woName = woName.replace('Work Order Administration:', '')
+
+        # print(idMain.get_attribute('id'))
+        # print(woName) 
+
+
+        # id = self.driverWo.find_element_by_class_name('maFormNew').get_attribute('id')
+
+        # part_seccion = self.driverWo.find_element_by_id(f'{id}_tabPage_Parts')
+
+        # part_seccion.click()
     
     def addComponentToOrder(self):
         idWindowAddContainer = self.driverWo.find_element_by_class_name('modalWindowFrame').get_attribute('id')
@@ -79,6 +218,12 @@ class Program:
     def openTabSupplie(self):
 
         driver = self.obtDriver()
+
+        print(driver.title)
+
+        driver.close()
+
+        return 0
 
         time.sleep(3)
         
@@ -121,8 +266,6 @@ class Program:
         buttonSave.click()
 
         driver.close()
-
-        
 
         showinfo(title='Informacion sobre el Supplie', message=f"""
         Supplie name: {self.nameSupplie}\n
